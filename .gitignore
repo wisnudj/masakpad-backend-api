@@ -57,3 +57,5 @@ typings/
 # dotenv environment variables file
 .env
 
+# Google Cloud Key
+wisnu-coba2-4c84d79b7715.json
