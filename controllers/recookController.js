@@ -1,12 +1,22 @@
 const Recook = require('../models/recook')
 const User = require('../models/user')
 
+// Imports the Google Cloud client library
+const Storage = require('@google-cloud/storage');
+
+// Creates a client
+const storage = Storage({
+  projectId: process.env.projectId,
+  keyFilename: process.env.keyFilename
+})
+
 module.exports = {
   Create: (req, res) => {
     Recook.create({
       content: req.body.content,
       author: req.header.decoded._id,
       urlImage: req.file.cloudStoragePublicUrl,
+      filename: req.file.gcsname,
       resep: req.body.resep_id
     })
     .then((result) => {
@@ -36,7 +46,7 @@ module.exports = {
 
   ReadOne: (req, res) => {
     Recook
-      .find({author: req.params.id})
+      .find({resep: req.params.id})
       .populate('author')
       .populate('like')
       .exec((err, hasil) => {
@@ -98,6 +108,20 @@ module.exports = {
             })
           })
         }
+      })
+  },
+
+  Delete: (req, res) => {
+    Recook
+      .findOne({_id: req.params.id})
+      .then((recook) => {
+        storage.bucket('cobaaja').file(recook.filename).delete().then(() => {
+          Recook.deleteOne({_id: req.params.id}).then((deleterecook) => {
+            res.status(200).send({
+              SUCCESS: recook
+            })
+          })
+        })
       })
   }
 };

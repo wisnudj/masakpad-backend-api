@@ -1,12 +1,23 @@
+require('dotenv').config
 var Resep = require('../models/resep')
+var Recook = require('../models/recook')
 var User = require('../models/user')
+// Imports the Google Cloud client library
+const Storage = require('@google-cloud/storage');
+
+// Creates a client
+const storage = Storage({
+  projectId: process.env.projectId,
+  keyFilename: process.env.keyFilename
+})
+
 
 module.exports = {
   Create: (req, res) => {
-    console.log('yeah')
     Resep
       .create({
         urlImage: req.file.cloudStoragePublicUrl,
+        filename: req.file.gcsname,
         title: req.body.title,
         bahan: req.body.bahan,
         langkah: req.body.langkah,
@@ -85,6 +96,40 @@ module.exports = {
             })
           })
         }
+      })
+  },
+
+  Delete: (req, res) => {
+    Resep
+      .findOne({_id: req.params.id})
+      .then((resep) => {
+        console.log(resep)
+        storage.bucket('cobaaja').file(resep.filename).delete().then(() => {
+          console.log('success')
+          Resep.deleteOne({_id: req.params.id}).then((hasil) => {
+            Recook.find({resep: resep._id}).then((recook) => {
+              if(!recook) {
+                res.send({
+                  SUCCESS: resep
+                })
+              } else {
+                var fotodelete = []
+
+                recook.forEach((elemen) => {
+                  fotodelete.push(storage.bucket('cobaaja').file(elemen.filename).delete())
+                })
+
+                Promise.all(fotodelete).then(() => {
+                  Recook.remove({resep: resep._id}).then((hapusrecook) => {
+                    res.send({
+                      SUCCESS: resep
+                    })
+                  })
+                })
+              }
+            })
+          })
+        })
       })
   }
 };
