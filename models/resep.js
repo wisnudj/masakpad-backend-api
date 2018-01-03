@@ -13,6 +13,11 @@ var resepSchema = new Schema({
     required: [true, 'urlimage is required']
   },
 
+  filename: {
+    type: String,
+    required: [true, 'filename is required']
+  },
+
   bahan: [{
     type: String,
     required: [true, 'bahan-bahan harus dituliskan']

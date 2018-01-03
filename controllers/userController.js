@@ -18,7 +18,8 @@ module.exports = {
         res.status(201).send({
           SUCCESS: {
             name: user.name,
-            email: user.email
+            email: user.email,
+            pengikut: user.pengikut
           }
         })
       })
@@ -40,9 +41,9 @@ module.exports = {
             var payload = {
               _id: user._id,
               email: user.email,
-              name: user.name
+              name: user.name,
+              pengikut: user.pengikut
             }
-
 
             res.status(200).send({
               SUCCESS: {
@@ -92,9 +93,6 @@ module.exports = {
             }
           })
         }
-      })
-      .catch((err) => {
-        res.status(404).send(err)
       })
   }
 };

@@ -7,6 +7,10 @@ var recookSchema = new Schema({
     type: String
   },
 
+  filename: {
+    type: String
+  },
+
   content: {
     type: String,
     required: [true, 'Content is required']

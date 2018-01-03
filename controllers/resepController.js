@@ -1,18 +1,30 @@
-var Foto = require('../models/resep')
+require('dotenv').config
+var Resep = require('../models/resep')
+var Recook = require('../models/recook')
 var User = require('../models/user')
+// Imports the Google Cloud client library
+const Storage = require('@google-cloud/storage');
+
+// Creates a client
+const storage = Storage({
+  projectId: process.env.projectId,
+  keyFilename: process.env.keyFilename
+})
+
 
 module.exports = {
   Create: (req, res) => {
-    Foto
+    Resep
       .create({
         urlImage: req.file.cloudStoragePublicUrl,
-        status: req.body.status,
+        filename: req.file.gcsname,
+        title: req.body.title,
         bahan: req.body.bahan,
         langkah: req.body.langkah,
-        author: req.body.author
+        author: req.header.decoded._id
       })
       .then((result) => {
-        Foto
+        Resep
           .findOne({_id: result._id})
           .populate('author')
           .populate('like')
@@ -23,10 +35,13 @@ module.exports = {
           })
 
       })
+      .catch((err) => {
+        console.log(err)
+      })
   },
 
   Read: (req, res) => {
-    Foto
+    Resep
       .find()
       .populate('author')
       .populate('like')
@@ -35,13 +50,10 @@ module.exports = {
           SUCCESS: hasil
         })
       })
-      .catch((err) => {
-        res.status(404).send(err)
-      })
   },
 
   ReadOne: (req, res) => {
-    Foto
+    Resep
       .find({author: req.params.id})
       .populate('author')
       .populate('like')
@@ -56,7 +68,7 @@ module.exports = {
   },
 
   Like: (req, res) => {
-    Foto
+    Resep
       .findOne({_id: req.params.id})
       .populate('author')
       .populate('like')
@@ -85,8 +97,39 @@ module.exports = {
           })
         }
       })
-      .catch((err) => {
-        res.status(400).send(err)
+  },
+
+  Delete: (req, res) => {
+    Resep
+      .findOne({_id: req.params.id})
+      .then((resep) => {
+        console.log(resep)
+        storage.bucket(process.env.CLOUD_BUCKET).file(resep.filename).delete().then(() => {
+          console.log('success')
+          Resep.deleteOne({_id: req.params.id}).then((hasil) => {
+            Recook.find({resep: resep._id}).then((recook) => {
+              if(!recook) {
+                res.send({
+                  SUCCESS: resep
+                })
+              } else {
+                var fotodelete = []
+
+                recook.forEach((elemen) => {
+                  fotodelete.push(storage.bucket(process.env.CLOUD_BUCKET).file(elemen.filename).delete())
+                })
+
+                Promise.all(fotodelete).then(() => {
+                  Recook.remove({resep: resep._id}).then((hapusrecook) => {
+                    res.send({
+                      SUCCESS: resep
+                    })
+                  })
+                })
+              }
+            })
+          })
+        })
       })
   }
 };

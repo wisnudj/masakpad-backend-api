@@ -1,46 +1,40 @@
-const Comment = require('../models/recook')
+require('dotenv').config
+const Recook = require('../models/recook')
 const User = require('../models/user')
+
+// Imports the Google Cloud client library
+const Storage = require('@google-cloud/storage');
+
+// Creates a client
+const storage = Storage({
+  projectId: process.env.projectId,
+  keyFilename: process.env.keyFilename
+})
 
 module.exports = {
   Create: (req, res) => {
-    Comment.create({
+    Recook.create({
       content: req.body.content,
-      author: req.header.decoded.id,
+      author: req.header.decoded._id,
       urlImage: req.file.cloudStoragePublicUrl,
-      resep: req.body.resep
+      filename: req.file.gcsname,
+      resep: req.body.resep_id
     })
     .then((result) => {
-      Comment
+      Recook
         .findOne({_id: result._id})
         .populate('author')
         .populate('like')
         .exec((err, hasil) => {
-
-          if(err) {
-            res.status(400).send({
-              FAILED: err
-            })
-          }
-
           res.status(200).send({
             SUCCESS: hasil
           })
         })
-        .catch((err) => {
-          res.status(404).send({
-            FAILED: err
-          })
-        })
-    })
-    .catch((err) => {
-      res.status(404).send({
-        FAILED: err
-      })
     })
   },
 
   Read: (req, res) => {
-    Comment
+    Recook
       .find()
       .populate('author')
       .populate('like')
@@ -52,8 +46,8 @@ module.exports = {
   },
 
   ReadOne: (req, res) => {
-    Comment
-      .find({author: req.params.id})
+    Recook
+      .find({resep: req.params.id})
       .populate('author')
       .populate('like')
       .exec((err, hasil) => {
@@ -75,7 +69,7 @@ module.exports = {
   },
 
   Like: (req, res) => {
-    Comment
+    Recook
       .findOne({_id: req.params.id})
       .populate('author')
       .populate('like')
@@ -115,6 +109,20 @@ module.exports = {
             })
           })
         }
+      })
+  },
+
+  Delete: (req, res) => {
+    Recook
+      .findOne({_id: req.params.id})
+      .then((recook) => {
+        storage.bucket(process.env.CLOUD_BUCKET).file(recook.filename).delete().then(() => {
+          Recook.deleteOne({_id: req.params.id}).then((deleterecook) => {
+            res.status(200).send({
+              SUCCESS: recook
+            })
+          })
+        })
       })
   }
 };

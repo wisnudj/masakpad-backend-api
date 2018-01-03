@@ -43,6 +43,7 @@ const sendUploadToGCS = (req, res, next) => {
     req.file.cloudStorageObject = gcsname;
     file.makePublic().then(() => {
       req.file.cloudStoragePublicUrl = getPublicUrl(gcsname);
+      req.file.gcsname = gcsname
       next();
     });
   });
