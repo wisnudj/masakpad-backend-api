@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const loginmiddle = require('../middleware/login');
+const gcp = require('../middleware/gcp')
 const recookController = require('../controllers/recookController');
 
 router.get('/', recookController.Read)
