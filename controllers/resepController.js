@@ -1,18 +1,19 @@
-var Foto = require('../models/resep')
+var Resep = require('../models/resep')
 var User = require('../models/user')
 
 module.exports = {
   Create: (req, res) => {
-    Foto
+    console.log('yeah')
+    Resep
       .create({
         urlImage: req.file.cloudStoragePublicUrl,
-        status: req.body.status,
+        title: req.body.title,
         bahan: req.body.bahan,
         langkah: req.body.langkah,
-        author: req.body.author
+        author: req.header.decoded._id
       })
       .then((result) => {
-        Foto
+        Resep
           .findOne({_id: result._id})
           .populate('author')
           .populate('like')
@@ -23,10 +24,13 @@ module.exports = {
           })
 
       })
+      .catch((err) => {
+        console.log(err)
+      })
   },
 
   Read: (req, res) => {
-    Foto
+    Resep
       .find()
       .populate('author')
       .populate('like')
@@ -35,13 +39,10 @@ module.exports = {
           SUCCESS: hasil
         })
       })
-      .catch((err) => {
-        res.status(404).send(err)
-      })
   },
 
   ReadOne: (req, res) => {
-    Foto
+    Resep
       .find({author: req.params.id})
       .populate('author')
       .populate('like')
@@ -56,7 +57,7 @@ module.exports = {
   },
 
   Like: (req, res) => {
-    Foto
+    Resep
       .findOne({_id: req.params.id})
       .populate('author')
       .populate('like')
@@ -84,9 +85,6 @@ module.exports = {
             })
           })
         }
-      })
-      .catch((err) => {
-        res.status(400).send(err)
       })
   }
 };

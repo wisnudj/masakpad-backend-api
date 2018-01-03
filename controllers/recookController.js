@@ -1,46 +1,29 @@
-const Comment = require('../models/recook')
+const Recook = require('../models/recook')
 const User = require('../models/user')
 
 module.exports = {
   Create: (req, res) => {
-    Comment.create({
+    Recook.create({
       content: req.body.content,
-      author: req.header.decoded.id,
+      author: req.header.decoded._id,
       urlImage: req.file.cloudStoragePublicUrl,
-      resep: req.body.resep
+      resep: req.body.resep_id
     })
     .then((result) => {
-      Comment
+      Recook
         .findOne({_id: result._id})
         .populate('author')
         .populate('like')
         .exec((err, hasil) => {
-
-          if(err) {
-            res.status(400).send({
-              FAILED: err
-            })
-          }
-
           res.status(200).send({
             SUCCESS: hasil
           })
         })
-        .catch((err) => {
-          res.status(404).send({
-            FAILED: err
-          })
-        })
-    })
-    .catch((err) => {
-      res.status(404).send({
-        FAILED: err
-      })
     })
   },
 
   Read: (req, res) => {
-    Comment
+    Recook
       .find()
       .populate('author')
       .populate('like')
@@ -52,7 +35,7 @@ module.exports = {
   },
 
   ReadOne: (req, res) => {
-    Comment
+    Recook
       .find({author: req.params.id})
       .populate('author')
       .populate('like')
@@ -75,7 +58,7 @@ module.exports = {
   },
 
   Like: (req, res) => {
-    Comment
+    Recook
       .findOne({_id: req.params.id})
       .populate('author')
       .populate('like')

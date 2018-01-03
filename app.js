@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 
 app.use('/user', userRouters)
 app.use('/resep', resepRouters)
-app.use('/comment', recookRouters)
+app.use('/recook', recookRouters)
 
 app.listen(port, () => {
   console.log('Server running on port', port);
