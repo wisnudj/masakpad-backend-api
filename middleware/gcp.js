@@ -1,7 +1,7 @@
 require('dotenv').config
 const Storage = require('@google-cloud/storage')
 const Multer = require('multer');
-const CLOUD_BUCKET = "cobaaja";
+const CLOUD_BUCKET = process.env.CLOUD_BUCKET;
 
 const multer = Multer({
   storage: Multer.MemoryStorage,

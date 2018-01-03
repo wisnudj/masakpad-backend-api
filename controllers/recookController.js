@@ -1,3 +1,4 @@
+require('dotenv').config
 const Recook = require('../models/recook')
 const User = require('../models/user')
 
@@ -115,7 +116,7 @@ module.exports = {
     Recook
       .findOne({_id: req.params.id})
       .then((recook) => {
-        storage.bucket('cobaaja').file(recook.filename).delete().then(() => {
+        storage.bucket(process.env.CLOUD_BUCKET).file(recook.filename).delete().then(() => {
           Recook.deleteOne({_id: req.params.id}).then((deleterecook) => {
             res.status(200).send({
               SUCCESS: recook

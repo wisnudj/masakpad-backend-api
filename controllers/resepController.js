@@ -104,7 +104,7 @@ module.exports = {
       .findOne({_id: req.params.id})
       .then((resep) => {
         console.log(resep)
-        storage.bucket('cobaaja').file(resep.filename).delete().then(() => {
+        storage.bucket(process.env.CLOUD_BUCKET).file(resep.filename).delete().then(() => {
           console.log('success')
           Resep.deleteOne({_id: req.params.id}).then((hasil) => {
             Recook.find({resep: resep._id}).then((recook) => {
@@ -116,7 +116,7 @@ module.exports = {
                 var fotodelete = []
 
                 recook.forEach((elemen) => {
-                  fotodelete.push(storage.bucket('cobaaja').file(elemen.filename).delete())
+                  fotodelete.push(storage.bucket(process.env.CLOUD_BUCKET).file(elemen.filename).delete())
                 })
 
                 Promise.all(fotodelete).then(() => {
