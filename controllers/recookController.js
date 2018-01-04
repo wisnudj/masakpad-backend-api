@@ -61,11 +61,6 @@ module.exports = {
         })
 
       })
-      .catch((err) => {
-        res.status(404).send({
-          FAILED: err
-        })
-      })
   },
 
   Like: (req, res) => {
